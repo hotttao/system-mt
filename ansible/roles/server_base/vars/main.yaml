@@ -1,0 +1,52 @@
+SERVER:           "power_base"
+SERVER_IMAGE:     ""
+SERVER_IMAGE_ID:  ""
+SERVER_VERSION:   ""
+SERVER_CONTAINER: "{{ SERVER }}"
+SERVER_COMPOSE:   "{{ SERVER }}.yaml"
+
+# 自定义服务目录参数
+CUSTOM_LINK:      ""
+CUSTOM_ROOT:      ""
+CUSTOM_LOG:       ""
+CUSTOM_CONFIG:    ""
+CUSTOM_VAR:       ""
+CUSTOM_DATA:      ""
+CUSTOM_SCRIPTS:   ""
+CUSTOM_BIN:       ""
+CUSTOM_NGINX_HTML:       ""
+CUSTOM_NGINX_CONF:       ""
+
+# 默认的服务目录参数
+DEFAULT_LINK:     "{{ ZSHIELD_HOME }}/{{ SERVER }}"
+DEFAULT_ROOT:     "{{ ZSHIELD_HOME }}/{{ SERVER }}{{ DEPLOY_VERSION }}"
+DEFAULT_LOG:      "{{ SERVER_ROOT }}/logs"
+DEFAULT_CONFIG:   "{{ SERVER_ROOT }}/config"
+DEFAULT_VAR:      "{{ SERVER_ROOT }}/var"
+DEFAULT_DATA:     "{{ ZSHIELD_DATA_DIR }}/{{ SERVER }}"
+DEFAULT_SCRIPTS:  "{{ SERVER_ROOT }}/scripts"
+DEFAULT_BIN:      "{{ SERVER_ROOT }}/bin"
+
+# 实际使用的服务目录参数
+SERVER_LINK:      "{{ CUSTOM_LINK         | default(DEFAULT_LINK,     True) }}"
+SERVER_ROOT:      "{{ CUSTOM_ROOT         | default(DEFAULT_ROOT,     True) }}"
+SERVER_LOG:       "{{ CUSTOM_LOG          | default(DEFAULT_LOG,      True) }}"
+SERVER_CONFIG:    "{{ CUSTOM_CONFIG       | default(DEFAULT_CONFIG,   True) }}"
+SERVER_VAR:       "{{ CUSTOM_VAR          | default(DEFAULT_VAR,      True) }}"
+SERVER_DATA:      "{{ CUSTOM_DATA         | default(DEFAULT_DATA,     True) }}"
+SERVER_SCRIPTS:   "{{ CUSTOM_SCRIPTS      | default(DEFAULT_SCRIPTS,  True) }}"
+SERVER_BIN:       "{{ CUSTOM_BIN          | default(DEFAULT_BIN,      True) }}"
+NGINX_HTML_DST:   "{{ CUSTOM_NGINX_HTML   | default(NGINX_CUR_HTML,   True) }}"
+NGINX_CONF_DST:   "{{ CUSTOM_NGINX_CONF   | default(NGINX_CUR_CONFIG, True) }}"
+
+# 服务自身 files/template/images 所在目录
+SERVER_ROLE:      ""
+SERVER_FILES:     "{{ SERVER_ROLE }}/files"
+SERVER_TEMPLATES: "{{ SERVER_ROLE }}/templates"
+SERVER_IMAGES:    "{{ SERVER_FILES }}/images"
+SERVER_DEPLOY_START: True
+
+ON_INIT: False
+
+
+include: extra_vars.yaml

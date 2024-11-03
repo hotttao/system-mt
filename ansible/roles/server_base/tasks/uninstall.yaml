@@ -1,0 +1,11 @@
+- name: stop {{ SERVER }}
+  shell: date
+  notify:
+    - stop {{ SERVER_CONTAINER }} container
+
+- name: remove {{ SERVER }} directory
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+      - "{{ SERVER_ROOT }}"

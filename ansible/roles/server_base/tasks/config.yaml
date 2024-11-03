@@ -1,0 +1,92 @@
+- name: create {{ SERVER }} directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "755"
+  with_items:
+    - "{{ SERVER_ROOT }}"
+    - "{{ SERVER_LOG }}"
+    - "{{ SERVER_CONFIG }}"
+    - "{{ SERVER_DATA }}"
+    - "{{ SERVER_SCRIPTS }}"
+    - "{{ SERVER_VAR }}"
+    - "{{ SERVER_LOG }}/{{ SERVER_CONTAINER }}_logs"
+    - "{{ SERVER_LOG }}/supervisor"
+    - "{{ SERVER_VAR }}/supervisor/{{ SERVER_CONTAINER }}"
+
+
+# 必须放在这个位置，保证优先使用现场的历史配置
+- import_tasks: settings.yaml
+
+
+- name: check pre version {{ SERVER_LINK }}
+  stat:
+    path: "{{ SERVER_LINK }}/config"
+  register: server_pre_version
+
+
+- name: copy pre version config
+  copy:
+    src: "{{ SERVER_LINK }}/config"
+    dest: "{{ SERVER_ROOT }}"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    remote_src: yes
+  ignore_errors: True
+  when: server_pre_version.stat.exists and (not COPY_FORCE | bool)
+
+- name: copy {{ SERVER }} docker compose file
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: "docker-compose.yaml.j2", dest: "{{ SERVER_ROOT }}/docker-compose.yaml", mode: "644" }
+#    - { src: "{{ inventory_file }}", dest: "{{ SERVER_CONFIG }}/ansible/hosts", mode: "644" }
+#  notify:
+#    - stop {{ SERVER_CONTAINER }} container
+#    - restart {{ SERVER_CONTAINER }}
+
+- name: copy {{ SERVER }} config
+  include_tasks: utils/file_recursive.yaml
+  loop:
+    - { src: "files/config", dst: "{{ SERVER_CONFIG }}", force: "{{ COPY_FORCE }}" }
+    - { src: "files/copy_force", dst: "{{ SERVER_CONFIG }}", force: "yes" }
+
+    - { src: "{{ SERVER_FILES }}/config", dst: "{{ SERVER_CONFIG }}", force: "{{ COPY_FORCE }}" }
+    - { src: "{{ SERVER_FILES }}/copy_force", dst: "{{ SERVER_CONFIG }}", force: "yes" }
+    - { src: "{{ SERVER_FILES }}/root", dst: "{{ SERVER_ROOT }}", force: "yes" }
+    - { src: "{{ SERVER_FILES }}/scripts", dst: "{{ SERVER_SCRIPTS }}", force: "yes" }
+    - { src: "{{ SERVER_FILES }}/data", dst: "{{ SERVER_DATA }}", force: "yes" }
+  loop_control:
+    loop_var: x
+
+- name: template {{ SERVER }} config
+  include_tasks: utils/template_recursive.yaml
+  loop:
+    - { src: "templates/config", dst: "{{ SERVER_CONFIG }}", force: "{{ COPY_FORCE }}" }
+    - { src: "templates/copy_force", dst: "{{ SERVER_CONFIG }}", force: "yes" }
+    - { src: "templates/scripts", dst: "{{ SERVER_SCRIPTS }}", force: "yes" }
+    - { src: "templates/bin", dst: "{{ SERVER_SCRIPTS }}", force: "yes" }
+    - { src: "templates/nginx", dst: "{{ NGINX_CONF_DST }}", force: "yes" }
+
+    - { src: "{{ SERVER_TEMPLATES }}/config", dst: "{{ SERVER_CONFIG }}", force: "{{ COPY_FORCE }}" }
+    - { src: "{{ SERVER_TEMPLATES }}/copy_force", dst: "{{ SERVER_CONFIG }}", force: "yes" }
+    - { src: "{{ SERVER_TEMPLATES }}/scripts", dst: "{{ SERVER_SCRIPTS }}", force: "yes" }
+    - { src: "{{ SERVER_TEMPLATES }}/nginx", dst: "{{ NGINX_CONF_DST }}", force: "yes" }
+    - { src: "{{ SERVER_TEMPLATES }}/root", dst: "{{ SERVER_ROOT }}", force: "yes" }
+  loop_control:
+    loop_var: x
+
+- name: tar {{ SERVER }} config
+  include_tasks: utils/tar_recursive.yaml
+  loop:
+    - { src: "files/html", dst: "{{ NGINX_HTML_DST }}", force: "yes" }
+
+    - { src: "{{ SERVER_FILES }}/html", dst: "{{ NGINX_HTML_DST }}", force: "yes" }
+  loop_control:
+    loop_var: x

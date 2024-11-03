@@ -1,0 +1,8 @@
+#- import_tasks: check.yaml
+
+- name: restart {{ SERVER }}
+  shell: date
+  notify:
+    - stop {{ SERVER_CONTAINER }} container
+    - restart {{ SERVER_CONTAINER }}
+  when: SERVER_DEPLOY_START | bool

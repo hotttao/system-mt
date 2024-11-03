@@ -1,0 +1,28 @@
+- import_tasks: atomic.yaml
+  tags: [always, ]
+
+- import_tasks: config.yaml
+  tags: [config, ]
+
+- import_tasks: install.yaml
+  tags: [install, ]
+  when: not server_deployed
+
+- import_tasks: upgrade.yaml
+  tags: [upgrade, ]
+
+- import_tasks: load.yaml
+  tags: [load, ]
+
+- import_tasks: softlink.yaml
+  tags: [softlink, ]
+
+- import_tasks: restart.yaml
+  tags: [restart, ]
+
+- import_tasks: uninstall.yaml
+  tags: [uninstall, ]
+
+- import_tasks: stop.yaml
+  tags: [stop, ]
+

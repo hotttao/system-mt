@@ -1,0 +1,23 @@
+- name: stop {{ SERVER_CONTAINER }} container
+  docker_container:
+    timeout: "{{ docker_timeout }}"
+    name: "{{ SERVER_CONTAINER }}"
+    state: absent
+
+- name: restart {{ SERVER_CONTAINER }}
+  docker_compose:
+    project_src: "{{ SERVER_LINK }}"
+    state: present
+    restarted: yes
+    files:
+      - "{{ SERVER_COMPOSE }}"
+#      - docker-compose.yaml
+#      - docker-compose.yml
+  register: output
+
+- name: restart nginx
+  docker_compose:
+    project_src: "{{ NGINX_LINK }}"
+    restarted: yes
+    state: present
+  register: output

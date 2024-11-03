@@ -1,0 +1,4 @@
+- name: stop {{ SERVER }}
+  shell: date
+  notify:
+    - stop {{ SERVER_CONTAINER }} container

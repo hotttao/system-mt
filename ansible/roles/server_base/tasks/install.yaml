@@ -1,0 +1,14 @@
+#- import_tasks: check.yaml
+
+- import_tasks: config.yaml
+
+- import_tasks: load.yaml
+
+#- import_tasks: softlink.yaml
+
+#- import_tasks: crontab.yaml
+
+#- import_tasks: init.yaml
+#  when: ZS_RELEASE_INIT | bool
+
+#- import_tasks: upgrade.yaml

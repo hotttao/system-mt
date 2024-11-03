@@ -1,0 +1,20 @@
+- name: create {{ SERVER }} template directory
+  file:
+    path: "{{ x.dst }}/{{ item.path }}"
+    state: directory
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "755"
+  with_filetree: "{{ x.src }}"
+  when: item.state == 'directory'
+
+- name: template {{ SERVER }} config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ x.dst }}/{{ item.path | replace('.j2', '') }}"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "755"
+    force: "{{ x.force }}"
+  with_filetree: "{{ x.src }}"
+  when: item.state == 'file'

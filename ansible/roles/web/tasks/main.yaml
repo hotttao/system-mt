@@ -1,0 +1,36 @@
+- name: set SERVER_ROLE
+  set_fact:
+     CUR_ROLE_PATH: "{{ role_path }}"
+  tags: [always, ]
+
+- name: debug CUR_ROLE_PATH
+  debug:
+    msg: "{{ CUR_ROLE_PATH }}"
+  tags: [always, ]
+
+- name: run power_base role
+  import_role:
+    name: server_base
+  vars:
+    CUSTOM_LINK:      "{{ AIR_WEB_LINK }}"
+    CUSTOM_ROOT:      "{{ AIR_WEB_ROOT }}"
+    CUSTOM_LOG:       "{{ AIR_WEB_LOG }}"
+    CUSTOM_CONFIG:    "{{ AIR_WEB_CONFIG }}"
+    CUSTOM_VAR:       "{{ AIR_WEB_VAR }}"
+    CUSTOM_DATA:      "{{ AIR_WEB_DATA }}"
+    CUSTOM_SCRIPTS:   "{{ AIR_WEB_SCRIPTS }}"
+    CUSTOM_BIN:       "{{ AIR_WEB_BIN }}"
+    SERVER:           "air_web"
+    SERVER_IMAGE:     "{{ AIR_WEB_IMAGE }}"
+    SERVER_IMAGE_ID:  "{{ AIR_WEB_IMAGE_ID }}"
+    SERVER_VERSION:   "{{ AIR_WEB_VERSION }}"
+    SERVER_CONTAINER: "{{ AIR_WEB_CONTAINER }}"
+    SERVER_COMPOSE:   "{{ AIR_WEB_COMPOSE }}"
+    SERVER_ROLE:      "{{ CUR_ROLE_PATH }}"
+
+
+# - import_tasks: config.yaml
+#   tags: [config, ]
+
+# - import_tasks: install.yaml
+#   tags: [install, ]

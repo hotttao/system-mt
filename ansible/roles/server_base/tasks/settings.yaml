@@ -1,0 +1,29 @@
+- name: copy settings config
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ SERVER_CONFIG }}/{{ item.path }}"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+  with_filetree: "files/tar_gz"
+  when: item.state == 'file'
+
+- name: inspect {{ SERVER }} settings
+  stat:
+    path: "{{ SERVER_CONFIG }}/settings.tar.gz"
+  register: check_server_settings
+
+
+- name: copy {{ SERVER }} settings
+  unarchive:
+    src: "{{ SERVER_CONFIG }}/settings.tar.gz"
+    dest: "{{ SERVER_ROOT }}"
+    mode: "755"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    remote_src: yes
+  when: check_server_settings.stat.exists
+
+- name: delete {{ SERVER }} settings
+  file:
+    path: "{{ SERVER_CONFIG }}/settings.tar.gz"
+    state: absent

@@ -1,0 +1,17 @@
+
+AIR_WEB_IMAGE:     dr.z/zs_air
+AIR_WEB_IMAGE_ID:  ""
+AIR_WEB_VERSION:   1.0.1
+AIR_WEB_CONTAINER: "air_web"
+AIR_WEB_COMPOSE:   "docker-compose.yaml"
+
+AIR_WEB_LINK:     "{{ ZSHIELD_HOME }}/air_web"
+AIR_WEB_ROOT:     "{{ ZSHIELD_HOME }}/air_web{{ DEPLOY_VERSION }}"
+AIR_WEB_LOG:      "{{ AIR_WEB_ROOT }}/logs"
+AIR_WEB_CONFIG:   "{{ AIR_WEB_ROOT }}/config"
+AIR_WEB_VAR:      "{{ AIR_WEB_ROOT }}/var"
+AIR_WEB_DATA:     "{{ ZSHIELD_DATA_DIR }}/air_web"
+AIR_WEB_SCRIPTS:  "{{ AIR_WEB_ROOT }}/scripts"
+AIR_WEB_BIN:      "{{ AIR_WEB_ROOT }}/bin"
+
+#include: extra_vars.yaml

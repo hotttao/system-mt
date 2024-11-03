@@ -1,0 +1,20 @@
+- name: create {{ SERVER }} tar directory
+  file:
+    path: "{{ x.dst }}/{{ item.path }}"
+    state: directory
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "755"
+  with_filetree: "{{ x.src }}"
+  when: item.state == 'directory'
+
+- name: unarchive {{ SERVER }} files
+  unarchive:
+    src: "{{ item.src }}"
+    dest: "{{ x.dst }}"
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    mode: "755"
+#    force: "{{ x.force }}"
+  with_filetree: "{{ x.src }}"
+  when: item.state == 'file'

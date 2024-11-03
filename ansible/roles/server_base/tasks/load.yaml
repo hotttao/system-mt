@@ -1,0 +1,75 @@
+- name: start load image
+  block:
+    - name: inspect {{ SERVER }} image
+      docker_image_info:
+        name: "{{ SERVER_IMAGE_ID }}"
+      register: check_server_image
+      when: (SERVER_IMAGE_ID != "")
+
+    - name: debug check_server_image
+      debug:
+        var: check_server_image
+      when: (SERVER_IMAGE_ID != "")
+
+    - name: copy and load {{ SERVER }} docker images
+      block:
+        - name: copy {{ SERVER }} images
+          copy:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+            owner: "{{ DEPLOY_USER }}"
+            group: "{{ DEPLOY_USER }}"
+            mode: "755"
+          with_items:
+            - { src: "{{ SERVER_IMAGES }}/{{ SERVER }}.xz", dest: "{{ SERVER_ROOT }}/{{ SERVER }}.xz" }
+        - name: load {{ SERVER }} docker image
+          docker_image:
+            timeout: "{{ docker_timeout }}"
+            name: "{{ SERVER_IMAGE }}"
+            tag: "{{ SERVER_VERSION }}"
+            source: load
+            force_source: "{{ FORCE_SOURCE }}"
+            load_path: "{{ SERVER_ROOT }}/{{ SERVER }}.xz"
+          # notify:
+          #  - stop {{ SERVER_CONTAINER }} container
+          #  - restart {{ SERVER_CONTAINER }}
+      when: (SERVER_IMAGE_ID != "") and check_server_image.images | length == 0
+
+    - name: tag {{ SERVER }} docker image
+      docker_image:
+        timeout: "{{ docker_timeout }}"
+        name: "{{ SERVER_IMAGE_ID }}"
+        repository: "{{ SERVER_IMAGE }}:{{ SERVER_VERSION }}"
+        source: local
+      when: (SERVER_IMAGE_ID != "") and check_server_image.images | length == 1
+      ignore_errors: yes
+      register: load_server_image_result
+
+    - name: retry tag {{ SERVER }} docker image
+      docker_image:
+        timeout:  "{{ docker_timeout }}"
+        name: "{{ check_server_image['images'][0]['RepoTags'][0] }}"
+        repository: "{{ SERVER_IMAGE }}:{{ SERVER_VERSION }}"
+        source: local
+      when:  (SERVER_IMAGE_ID != "") and (check_server_image.images | length == 1) and (load_server_image_result['failed'])
+  rescue:
+      - name: retry copy {{ SERVER }} images
+        copy:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          owner: "{{ DEPLOY_USER }}"
+          group: "{{ DEPLOY_USER }}"
+          mode: "755"
+        with_items:
+          - { src: "{{ SERVER_IMAGES }}/{{ SERVER }}.xz", dest: "{{ SERVER_ROOT }}/{{ SERVER }}.xz" }
+
+      - name: retry load {{ SERVER }} docker image
+        docker_image:
+          timeout: "{{ docker_timeout }}"
+          name: "{{ SERVER_IMAGE }}"
+          tag: "{{ SERVER_VERSION }}"
+          source: load
+          force_source: "{{ FORCE_SOURCE }}"
+          load_path: "{{ SERVER_ROOT }}/{{ SERVER }}.xz"
+
+   

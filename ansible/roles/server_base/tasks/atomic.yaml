@@ -1,0 +1,22 @@
+- name: readlink {{ SERVER_LINK }}
+  stat:
+    path: "{{ SERVER_LINK }}"
+  register: "server_link"
+
+- name: set {{ SERVER }}_real_path var
+  set_fact:
+     server_real_path: "{{ server_link.stat.get('lnk_source', '') | trim }}"
+
+- name: set {{ SERVER }}_deployed var true
+  set_fact:
+     server_deployed: True
+  when: server_real_path == SERVER_ROOT
+
+- name: set {{ SERVER }}_deployed var false
+  set_fact:
+    server_deployed: False
+  when: server_real_path != SERVER_ROOT
+
+- name: debug {{ SERVER }}_deployed
+  debug:
+    msg : "{{ server_real_path }} == {{ SERVER_ROOT }} is {{ server_deployed }}"

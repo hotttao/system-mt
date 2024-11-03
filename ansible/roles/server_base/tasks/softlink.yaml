@@ -1,0 +1,27 @@
+- name: check {{ SERVER_ROOT }} dir exist
+  stat:
+    path: "{{ SERVER_ROOT }}"
+  register: server_root
+
+
+- name: remove {{ SERVER }} link  directory
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+      - "{{ SERVER_LINK }}"
+
+
+- name: create {{ SERVER_ROOT }} soft link to {{ SERVER_LINK }}
+  file:
+    state: link
+    force: y
+    owner: "{{ DEPLOY_USER }}"
+    group: "{{ DEPLOY_USER }}"
+    src: "{{ SERVER_ROOT }}"
+    dest: "{{ SERVER_LINK }}"
+  when: server_root.stat.exists
+#  notify:
+#   - stop {{ SERVER_CONTAINER }} container
+#   - restart {{ SERVER_CONTAINER }}
+

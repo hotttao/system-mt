@@ -1,0 +1,15 @@
+- hosts:
+  - all
+  gather_facts: true
+  any_errors_fatal: true
+  environment:
+    DOCKER_CLIENT_TIMEOUT: '{{ docker_timeout }}'
+    COMPOSE_HTTP_TIMEOUT: '{{ docker_timeout }}'
+  pre_tasks: null
+  tasks:
+  - name: include local settings
+    include_vars: _extra_vars.yaml
+    tags:
+    - always
+  - import_role:
+      name: web
