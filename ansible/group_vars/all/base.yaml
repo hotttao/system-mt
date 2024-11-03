@@ -1,10 +1,14 @@
 ansible_ssh_user: "{{ DEPLOY_USER }}"
-ansible_python_interpreter: python3.10
+ansible_python_interpreter: /usr/local/bin/python3.10
 docker_timeout: 200
 
 ZSHIELD_HOME: /home/tao/online
 ZSHIELD_DATA_DIR: "{{ ZSHIELD_HOME }}/data"
+ZSHIELD_CONFIG: "{{ ZSHIELD_HOME }}/config"
 ZSHIELD_REPORT: "{{ ZSHIELD_HOME }}/report"
+NGINX_CUR_CONFIG: "{{ ZSHIELD_CONFIG }}/nginx"
+NGINX_CUR_HTML: "{{ ZSHIELD_CONFIG }}/html"
 
 DEPLOY_VERSION: v1
 DEPLOY_USER: tao
+COPY_FORCE: true
