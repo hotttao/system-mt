@@ -1,0 +1,85 @@
+name: relay-penpot-images
+
+# 中转 Docker Hub 官方镜像到个人 ghcr.io:
+# Actions 的 Docker 版本较新(经典存储层),pull zstd 层后 push 时会重新以 gzip 压缩,
+# 使得旧版本 Docker(< 23,不支持 zstd 层)也能从 ghcr 拉取这些镜像。
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Penpot 镜像版本 tag"
+        required: false
+        default: "2.18"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - source: penpotapp/frontend
+            target: penpot-frontend
+            tag: default
+          - source: penpotapp/backend
+            target: penpot-backend
+            tag: default
+          - source: penpotapp/admin-console
+            target: penpot-admin-console
+            tag: default
+          - source: penpotapp/mcp
+            target: penpot-mcp
+            tag: default
+          - source: penpotapp/exporter
+            target: penpot-exporter
+            tag: default
+          - source: valkey/valkey
+            target: valkey
+            tag: "8.1"
+
+    steps:
+      - name: 计算源/目标 tag
+        id: tag
+        run: |
+          SRC_TAG="${{ matrix.tag }}"
+          if [ "$SRC_TAG" = "default" ]; then
+            SRC_TAG="${{ inputs.version }}"
+          fi
+          echo "src_tag=$SRC_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: 拉取官方镜像
+        run: |
+          docker pull ${{ matrix.source }}:${{ steps.tag.outputs.src_tag }}
+
+      - name: 推送到 ghcr.io
+        env:
+          DST: ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}:${{ steps.tag.outputs.src_tag }}
+        run: |
+          docker tag ${{ matrix.source }}:${{ steps.tag.outputs.src_tag }} "$DST"
+          docker push "$DST"
+
+      - name: 校验推送结果(层必须为 gzip)
+        env:
+          DST: ghcr.io/${{ github.repository_owner }}/${{ matrix.target }}:${{ steps.tag.outputs.src_tag }}
+        run: |
+          docker buildx imagetools inspect "$DST" | tee /tmp/inspect.txt
+          if grep -q 'tar+zstd' /tmp/inspect.txt; then
+            echo "::error::推送的镜像仍包含 zstd 层,本地旧版 Docker 无法解压"
+            exit 1
+          fi
+          echo "OK: 全部层为 gzip"
+
+      - name: 将包设为 public(便于匿名拉取)
+        continue-on-error: true
+        run: |
+          curl -sS -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/user/packages/container/${{ matrix.target }} \
+            -d '{"visibility":"public"}'
