@@ -1,0 +1,16 @@
+# WARNING: this file is not suitable for production, please use with caution
+version: '3'
+
+services:
+  celery:
+    image: stock_data_serv
+    command: "celery worker -A stock_data_serv.celery_app:app"
+    env_file:
+      - ./.flaskenv
+    volumes:
+      - .:/code
+    depends_on:
+      - rabbitmq
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq
+      - CELERY_RESULT_BACKEND_URL=redis://redis

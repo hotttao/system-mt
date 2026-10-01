@@ -1,0 +1,40 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/volcengine/openviking
+  tag: v0.4.20
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 1933
+  nodePort: 31933
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  accessMode: ReadWriteOnce
+  size: 20Gi
+
+bot:
+  enabled: false
+
+config:
+  server:
+    host: "0.0.0.0"
+    port: 1933
+    workers: 1
+    root_api_key: local-openviking-root-key
+  embedding:
+    dense:
+      api_key: change-me-embedding-key
+  vlm:
+    api_key: change-me-vlm-key
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi

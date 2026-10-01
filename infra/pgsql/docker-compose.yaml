@@ -1,0 +1,16 @@
+version: "3.3"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres        # 默认用户名
+      POSTGRES_PASSWORD: example     # 默认密码
+      POSTGRES_DB: postgres          # 默认数据库
+    ports:
+      - "5432:5432"
+    volumes:
+      - /data/pgdata:/var/lib/postgresql/data
+
